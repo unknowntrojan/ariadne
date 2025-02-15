@@ -58,16 +58,16 @@ var covered_color = green_alt;
 var covered_border_color = dark_green_alt;
 
 // sizing
-var complexity_tiny   = 5;
-var complexity_small  = 10;
+var complexity_tiny = 5;
+var complexity_small = 10;
 var complexity_medium = 20;
-var complexity_large  = 100;
+var complexity_large = 100;
 //var complexity_jumbo  = 101; // just compare > large
-var size_tiny   = 20;
-var size_small  = 30;
+var size_tiny = 20;
+var size_small = 30;
 var size_medium = 45;
-var size_large  = 60;
-var size_jumbo  = 80;
+var size_large = 60;
+var size_jumbo = 80;
 
 // layout options
 // more options at: https://github.com/cytoscape/cytoscape.js-klay
@@ -75,8 +75,8 @@ var klay_layout = {
     name: 'klay',
     nodeDimensionsIncludeLabels: true,
     klay: {
-    //'direction': 'DOWN'
-    //'direction': 'RIGHT'
+        //'direction': 'DOWN'
+        //'direction': 'RIGHT'
     },
     padding: 50, // padding pixels around edge to avoid colliding with controls
 }
@@ -104,15 +104,15 @@ var default_layout = dagre_layout;
 
 // In case we need to avoid console.log
 function log_status(message) {
-  console.log(message);
-  /*
-  var status_elem = document.getElementById("status");
-  if (status_elem) {
-    let current_status = status_elem.innerHTML;
-    current_status += message;
-    status_elem.innerHTML = current_status;
-  }
-  */
+    console.log(message);
+    /*
+    var status_elem = document.getElementById("status");
+    if (status_elem) {
+      let current_status = status_elem.innerHTML;
+      current_status += message;
+      status_elem.innerHTML = current_status;
+    }
+    */
 }
 function log_collection(c) {
     console.log(`${c.edges().length} edges, ${c.nodes().length} nodes:`)
@@ -128,8 +128,8 @@ function update_status() {
         var status = 'Inactive';
         var cur_color = light_grey;
 
-        if (typeof(websock) == 'object') {
-            if      (websock.readyState == 0) {
+        if (typeof (websock) == 'object') {
+            if (websock.readyState == 0) {
                 status = 'Connecting...';
             }
             else if (websock.readyState == 1) {
@@ -158,78 +158,78 @@ function update_status() {
 // onload callback (entrypoint); opens websocket
 //
 function js_init() {
-  container = document.getElementById("graph_container");
-  document.getElementById("remove_node_btn").addEventListener("click", handleRemoveNode);
-  document.getElementById("remove_descendents_btn").addEventListener("click", handleRemoveNodeAndDescendents);
-  document.getElementById("reset_graph_btn").addEventListener("click", handleResetGraph);
-  document.getElementById("hide_imports_btn").addEventListener("click", handleToggleImports);
-  document.getElementById("open_btn").addEventListener("click", handleOpen);
-  document.getElementById("toggle_coverage_btn").addEventListener("click", handleToggleCoverage);
-  document.getElementById("redo_layout_btn").addEventListener("click", handleRedoLayout);
-  document.getElementById("get_new_neighborhood").addEventListener("click", handleGetNewNeighborhood);
+    container = document.getElementById("graph_container");
+    document.getElementById("remove_node_btn").addEventListener("click", handleRemoveNode);
+    document.getElementById("remove_descendents_btn").addEventListener("click", handleRemoveNodeAndDescendents);
+    document.getElementById("reset_graph_btn").addEventListener("click", handleResetGraph);
+    document.getElementById("hide_imports_btn").addEventListener("click", handleToggleImports);
+    document.getElementById("open_btn").addEventListener("click", handleOpen);
+    document.getElementById("toggle_coverage_btn").addEventListener("click", handleToggleCoverage);
+    document.getElementById("redo_layout_btn").addEventListener("click", handleRedoLayout);
+    document.getElementById("get_new_neighborhood").addEventListener("click", handleGetNewNeighborhood);
 
-  document.getElementById("func_search_input").addEventListener("input", handleSearchInputChange);
+    document.getElementById("func_search_input").addEventListener("input", handleSearchInputChange);
 
-  // Just poll websocket status in background
-  setInterval(update_status, 1000);
+    // Just poll websocket status in background
+    setInterval(update_status, 1000);
 
-  websock = new WebSocket(websock_url);
+    websock = new WebSocket(websock_url);
 
 
-  websock.onmessage = function(event) {
-    log_status(' Receiving websocket message.');
-    var title_elem = document.getElementById("title");
-    title_elem.innerHTML = "Loading graph...";
+    websock.onmessage = function (event) {
+        log_status(' Receiving websocket message.');
+        var title_elem = document.getElementById("title");
+        title_elem.innerHTML = "Loading graph...";
 
-    let parse_start_time = performance.now()
-    var model = JSON.parse(event.data);
+        let parse_start_time = performance.now()
+        var model = JSON.parse(event.data);
 
-    //log_status(`DBG: JSON model: ${JSON.stringify(model)}`);
-    if (model.elements) {
-        log_status(`JSON model has ${model.elements.length} elements`);
-    }
+        //log_status(`DBG: JSON model: ${JSON.stringify(model)}`);
+        if (model.elements) {
+            log_status(`JSON model has ${model.elements.length} elements`);
+        }
 
-    let parse_duration = performance.now() - parse_start_time;
-    json_contents = model;
-    cur_bv = json_contents['bv'];
-    log_status(`JSON parsed in ${parse_duration} milliseconds`);
+        let parse_duration = performance.now() - parse_start_time;
+        json_contents = model;
+        cur_bv = json_contents['bv'];
+        log_status(`JSON parsed in ${parse_duration} milliseconds`);
 
-    let render_start_time = performance.now()
-    renderCytoscape(model);
+        let render_start_time = performance.now()
+        renderCytoscape(model);
 
-    let render_duration = performance.now() - render_start_time;
-    log_status(`Render function completed in ${render_duration} milliseconds`);
+        let render_duration = performance.now() - render_start_time;
+        log_status(`Render function completed in ${render_duration} milliseconds`);
 
-    if (model.title) {
-      if (title_elem) {
-        title_elem.innerHTML = model.title;
-      }
-    }
-  };
+        if (model.title) {
+            if (title_elem) {
+                title_elem.innerHTML = model.title;
+            }
+        }
+    };
 
-  websock.onclose = function(event) {
-    if (event.wasClean) {
-      log_status(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-    } else {
-      log_status(`[close] Connection died, reason: ${event.reason}`);
-    }
-  };
+    websock.onclose = function (event) {
+        if (event.wasClean) {
+            log_status(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+        } else {
+            log_status(`[close] Connection died, reason: ${event.reason}`);
+        }
+    };
 
-  websock.onerror = function(error) {
-    log_status(`[error] ${error.message}`);
-  };
+    websock.onerror = function (error) {
+        log_status(`[error] ${error.message}`);
+    };
 
-  $(window).on('beforeunload', function(){
-    websock.close();
-  });
+    $(window).on('beforeunload', function () {
+        websock.close();
+    });
 
-  log_status(" js_init() finished.")
+    log_status(" js_init() finished.")
 }
 
 //
 // event handling
 //
-function handleNodeClick( event ) {
+function handleNodeClick(event) {
 
     let clickedNode = event.target;
 
@@ -254,34 +254,34 @@ function handleNodeClick( event ) {
 function handleOpen(event) {
     if (focusedNode != null) {
         websock.send(JSON.stringify({
-            'start':  focusedNode.data()['start'],
+            'start': focusedNode.data()['start'],
             'bv': cur_bv,
             'mode': 'focus'
-          }));
+        }));
     }
 }
 
 function addFocus(focusNode) {
-  focusNode.addClass('focused');
+    focusNode.addClass('focused');
 
-  let neighborhood = cy.collection().union(focusNode);
+    let neighborhood = cy.collection().union(focusNode);
 
-  let in_edges = focusNode.incomers().addClass('from');
-  let in_nodes = in_edges.sources().addClass('from');
-  neighborhood = neighborhood.union(in_edges).union(in_nodes);
+    let in_edges = focusNode.incomers().addClass('from');
+    let in_nodes = in_edges.sources().addClass('from');
+    neighborhood = neighborhood.union(in_edges).union(in_nodes);
 
-  let out_edges = focusNode.outgoers().addClass('to');
-  let out_nodes = out_edges.targets().addClass('to');
-  neighborhood = neighborhood.union(out_edges).union(out_nodes);
+    let out_edges = focusNode.outgoers().addClass('to');
+    let out_nodes = out_edges.targets().addClass('to');
+    neighborhood = neighborhood.union(out_edges).union(out_nodes);
 
-  cy.elements().difference(neighborhood).addClass('background');
+    cy.elements().difference(neighborhood).addClass('background');
 }
 
 function removeFocus() {
-  cy.elements().removeClass('focused')
-               .removeClass('to')
-               .removeClass('from')
-               .removeClass('background');
+    cy.elements().removeClass('focused')
+        .removeClass('to')
+        .removeClass('from')
+        .removeClass('background');
 }
 
 function hideSidebarMetadata() {
@@ -302,7 +302,7 @@ function hideSidebarMetadata() {
 
 function showSidebarMetadata() {
     // deepcopy the data via spread operator
-    let function_metadata = {...focusedNode.data()};
+    let function_metadata = { ...focusedNode.data() };
 
     document.getElementById("sidebar_title").innerHTML = function_metadata.label;
     document.getElementById("sidebar_title").style.fontWeight = "bold";
@@ -340,7 +340,7 @@ function showSidebarMetadata() {
             value_str = val.join(', ')
         }
         // format floats to only show a few decimal points of precision
-        else if (typeof(val) == 'number' && !Number.isInteger(val)) {
+        else if (typeof (val) == 'number' && !Number.isInteger(val)) {
             value_str = val.toFixed(4);
         }
 
@@ -373,7 +373,7 @@ function sidebarHeaderClickable(clickable) {
     }
 }
 
-function handleRemoveNode( event ) {
+function handleRemoveNode(event) {
     if (focusedNode) {
         removeNode(focusedNode);
     }
@@ -405,7 +405,7 @@ function restoreNode(node_to_restore) {
     cy.add(node_to_restore);
 }
 
-function handleRemoveNodeAndDescendents( event ) {
+function handleRemoveNodeAndDescendents(event) {
 
     if (focusedNode) {
 
@@ -434,7 +434,7 @@ function handleRemoveNodeAndDescendents( event ) {
     }
 }
 
-function handleRemoveAncestors( event ) {
+function handleRemoveAncestors(event) {
 
     if (focusedNode) {
 
@@ -464,7 +464,7 @@ function handleRemoveAncestors( event ) {
     }
 }
 
-function handleToggleImports( event ) {
+function handleToggleImports(event) {
     let hideImportsButton = document.getElementById("hide_imports_btn");
 
     if (hiddenImportNodes) {
@@ -516,17 +516,17 @@ function handleToggleImports( event ) {
     }
 }
 
-function handleRedoLayout( event ) {
+function handleRedoLayout(event) {
     cy.layout(default_layout).run();
 }
 
-function handleGetNewNeighborhood( event ) {
+function handleGetNewNeighborhood(event) {
 
     if (focusedNode == null) {
         return;
     }
     let target_function = {
-        'start':  focusedNode.data()['start'],
+        'start': focusedNode.data()['start'],
         'bv': cur_bv,
         'mode': 'neighbor'
     }
@@ -535,7 +535,7 @@ function handleGetNewNeighborhood( event ) {
 
 }
 
-function handleFuncSearch( event ) {
+function handleFuncSearch(event) {
     let search_input = document.getElementById("func_search_input");
     let search_text = search_input.value;
     //console.log(`Function search was triggered: ${search_text}`);
@@ -548,7 +548,7 @@ function handleFuncSearch( event ) {
         return;
     }
 
-    let prefix_matches = cy.filter( function(element, i) {
+    let prefix_matches = cy.filter(function (element, i) {
         return element.isNode() && element.data('label').startsWith(search_text);
     });
     // NOTE: the text color will indicate whether this was a good idea
@@ -557,7 +557,7 @@ function handleFuncSearch( event ) {
     }
 }
 
-function handleSearchInputChange( event ) {
+function handleSearchInputChange(event) {
     let input_element = event.target;
     let search_text = event.target.value
     //console.log(`Search input change: "${search_text}"`)
@@ -574,7 +574,7 @@ function handleSearchInputChange( event ) {
             return;
         }
 
-        let prefix_matches = cy.filter( function(element, i) {
+        let prefix_matches = cy.filter(function (element, i) {
             return element.isNode() && element.data('label').startsWith(search_text);
         });
         if (prefix_matches.length == 1) {
@@ -593,14 +593,14 @@ function handleSearchInputChange( event ) {
     }
 }
 
-function getCoverageGradient( ele ) {
+function getCoverageGradient(ele) {
     let stop_position = parseInt(ele.data('coverage_percent'));
     let stop_pos_str = `0% ${stop_position}% ${stop_position}%`
     return stop_pos_str
 }
 
 // Add and remove coverage styling
-function handleToggleCoverage( event ) {
+function handleToggleCoverage(event) {
     let toggleCoverageButton = document.getElementById('toggle_coverage_btn')
     if (coverageStylingOn) {
         // remove styling for classes
@@ -621,7 +621,7 @@ function handleToggleCoverage( event ) {
     coverageStylingOn = !coverageStylingOn;
 }
 
-function handleResetGraph( event ) {
+function handleResetGraph(event) {
     if (json_contents) {
         renderCytoscape(json_contents);
     }
@@ -634,7 +634,7 @@ function reloadCytoscape() {
 //
 // callback to start cytoscape once page is loaded
 //
-function renderCytoscape(model){
+function renderCytoscape(model) {
 
 
     // Instantiate cytoscape graph
@@ -651,21 +651,21 @@ function renderCytoscape(model){
             {
                 selector: 'node',
                 style: {
-                'background-color': light_green,
-                'label': 'data(label)',
-                'border-color': subtle_grey,
-                'border-width': 3,
-                'width': size_jumbo,
-                'height': size_jumbo,
+                    'background-color': light_green,
+                    'label': 'data(label)',
+                    'border-color': subtle_grey,
+                    'border-width': 3,
+                    'width': size_jumbo,
+                    'height': size_jumbo,
                 }
             },
             {
                 selector: 'edge',
                 style: {
-                'line-color': darker_subtle_grey,
-                'target-arrow-color': darker_subtle_grey,
-                'target-arrow-shape': 'triangle',
-                'curve-style': 'bezier',
+                    'line-color': darker_subtle_grey,
+                    'target-arrow-color': darker_subtle_grey,
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier',
                 }
             },
             {
@@ -678,7 +678,7 @@ function renderCytoscape(model){
             {
                 selector: 'node[label]',
                 style: {
-                'color': white,
+                    'color': white,
                 }
             },
             {
@@ -700,22 +700,22 @@ function renderCytoscape(model){
             {
                 selector: 'node[import = 1]',
                 style: {
-                'background-color': orange,
-                'shape': 'diamond',
-                'width': size_small,
-                'height': size_small,
+                    'background-color': orange,
+                    'shape': 'diamond',
+                    'width': size_small,
+                    'height': size_small,
                 }
             },
             {
                 selector: 'node[visited = 1]',
                 style: {
-                'border-color': dark_blue,
+                    'border-color': dark_blue,
                 }
             },
             {
                 selector: 'node[current_function]',
                 style: {
-                'background-color': bright_red,
+                    'background-color': bright_red,
                 }
             },
             {
@@ -748,29 +748,29 @@ function renderCytoscape(model){
             {
                 selector: '.background',
                 style: {
-                'opacity': '0.5',
+                    'opacity': '0.5',
                 }
             },
             {
                 selector: '.from',
                 style: {
-                'background-color': from_color,
-                'line-color': from_color,
-                'target-arrow-color': from_color,
+                    'background-color': from_color,
+                    'line-color': from_color,
+                    'target-arrow-color': from_color,
                 }
             },
             {
                 selector: '.to',
                 style: {
-                'background-color': to_color,
-                'line-color': to_color,
-                'target-arrow-color': to_color,
+                    'background-color': to_color,
+                    'line-color': to_color,
+                    'target-arrow-color': to_color,
                 }
             },
             {
                 selector: '.focused',
                 style: {
-                'background-color': selected_color,
+                    'background-color': selected_color,
                 }
             },
         ]
