@@ -163,6 +163,7 @@ function js_init() {
   document.getElementById("remove_descendents_btn").addEventListener("click", handleRemoveNodeAndDescendents);
   document.getElementById("reset_graph_btn").addEventListener("click", handleResetGraph);
   document.getElementById("hide_imports_btn").addEventListener("click", handleToggleImports);
+  document.getElementById("open_btn").addEventListener("click", handleOpen);
   document.getElementById("toggle_coverage_btn").addEventListener("click", handleToggleCoverage);
   document.getElementById("redo_layout_btn").addEventListener("click", handleRedoLayout);
   document.getElementById("get_new_neighborhood").addEventListener("click", handleGetNewNeighborhood);
@@ -247,6 +248,16 @@ function handleNodeClick( event ) {
         addFocus(clickedNode);
         showSidebarMetadata();
         sidebarHeaderClickable(true);
+    }
+}
+
+function handleOpen(event) {
+    if (focusedNode != null) {
+        websock.send(JSON.stringify({
+            'start':  focusedNode.data()['start'],
+            'bv': cur_bv,
+            'mode': 'focus'
+          }));
     }
 }
 
@@ -517,6 +528,7 @@ function handleGetNewNeighborhood( event ) {
     let target_function = {
         'start':  focusedNode.data()['start'],
         'bv': cur_bv,
+        'mode': 'neighbor'
     }
     let target_function_json = JSON.stringify(target_function);
     websock.send(target_function_json);

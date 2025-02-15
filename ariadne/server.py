@@ -56,9 +56,12 @@ class AriadneHTTPHandler(SimpleHTTPRequestHandler):
 def run_http_server(address: str, port: int):
     handler = AriadneHTTPHandler
     os.chdir(get_web_dir())
-    with HTTPServer((address, port), handler) as httpd:
-        log_info(f'Serving web UI at http://{address}:{port}', 'ARIADNE:HTTP')
-        httpd.serve_forever()
+    try:
+        with HTTPServer((address, port), handler) as httpd:
+            log_info(f'Serving web UI at http://{address}:{port}', 'ARIADNE:HTTP')
+            httpd.serve_forever()
+    except Exception as e:
+        log_error(f"Exception serving HTTP: {e}", "ARIADNE:HTTP")
 
 
 # The two global strings for websocket send/recv
@@ -87,9 +90,14 @@ async def websocket_handler(websocket):
             if client_msg:
                 try:
                     client_dict = json.loads(client_msg)
+                    mode = client_dict['mode']
                     bv_name = client_dict['bv']
                     start_addr = client_dict['start']
-                    server_instance.core.graph_new_neighborhood(bv_name, start_addr)
+
+                    if mode == 'neighbor':
+                        server_instance.core.graph_new_neighborhood(bv_name, start_addr)
+                    elif mode == 'focus':
+                        server_instance.core.focus_node(bv_name, start_addr)
                 except Exception as e:
                     log_error(f'websocket_handler: client_msg handling exception: "{e}"')
                     # the JSON object must be str, bytes or bytearray not coroutine

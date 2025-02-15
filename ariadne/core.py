@@ -347,6 +347,21 @@ class AriadneCore():
             cytoscape_obj = cur_target.get_cytoscape(neighborhood_graph)
             self.server.set_graph_data(bv, cytoscape_obj, graph_title)
 
+    def focus_node(self, bv_name: str, start: int):
+        """Focus a specific function in the graph."""
+        if short_name(self.current_bv) == bv_name:
+            bv = self.current_bv
+        else:
+            bv = None
+            for iter_bv in self.targets:
+                if short_name(iter_bv) == bv_name:
+                    bv = iter_bv
+                    break
+            if bv is None:
+                log_error(f'graph_new_neighborhood: Could not find bv_name "{bv_name}"')
+                return
+
+        self.current_bv.navigate(self.current_bv.view, start)
 
     def do_coverage_analysis(self, bv: BinaryView):
         """Import coverage data from bncov manually"""
